@@ -1,0 +1,13 @@
+ccxt
+pycoingecko
+web3
+requests
+yfinance
+sqlalchemy         # for database connections
+pandas
+numpy
+matplotlib
+plotly
+dash
+dash-bootstrap-components
+
