@@ -39,7 +39,7 @@ def get_dai_collateralization_history():
 
 
 ### 2. Get Treasury Composition of a Protocol (e.g., Lido) from DeFiLlama
-def get_treasury_composition(protocol="lido"):
+def get_treasury_composition(protocol="compound"):
     url = f"https://api.llama.fi/treasuries/{protocol}"
     response = requests.get(url)
     if response.status_code == 200:
@@ -49,9 +49,12 @@ def get_treasury_composition(protocol="lido"):
         print(f"Treasury composition saved to {csv_filename}")
         return df
     if response.status_code == 200:
-        return pd.json_normalize(response.json()["tokens"])
+        try:
+            return pd.json_normalize(response.json()["tokens"])
+        except KeyError:
+            raise Exception(f"Unexpected response format for {protocol}")
     else:
-        raise Exception(f"Treasury data fetch failed for {protocol}")
+        raise Exception(f"Treasury data fetch failed for {protocol} with status code {response.status_code}")
 
 
 ### 3. Get Liquidity Pool Depths (TVL) from DeFiLlama Aggregated Pools
@@ -93,13 +96,13 @@ if __name__ == "__main__":
     end_block = 99999999
 
     get_dai_collateralization_history()
-    get_treasury_composition()
+    # get_treasury_composition()
     get_liquidity_pool_depths()
     get_historical_data(contract_address, start_block, end_block)
     # Fetch historical data for DAI
     fetch_historical_data(w3, contract_address, start_block, end_block)
     # Fetch treasury composition for Lido
-    get_treasury_composition("lido")
+    # get_treasury_composition("compound")
     # Fetch liquidity pool depths for Curve
     get_liquidity_pool_depths("curve")
     

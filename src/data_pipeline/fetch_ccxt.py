@@ -38,6 +38,17 @@ binance = ccxt.binance({
     'secret': binance_api_secret,
 })
 
+# Initialize Binance Futures API
+binance_futures = ccxt.binance({
+    'apiKey': binance_api_key,
+    'secret': binance_api_secret,
+    'options': {
+        'defaultType': 'future'  # <-- this is key
+    }
+})
+
+binance_futures.fetch_funding_rate('BNB/USDT:USDT')
+
 # Define pairs and fetch historical data for the last 2 years
 binance_coin_pairs = [
     "SOL/USDC",
@@ -48,6 +59,12 @@ binance_coin_pairs = [
     "ETH/DAI",
     "BTC/DAI",
     "LTC/USDT"
+]
+
+futures_pairs = [
+    "BNB/USDT:USDT",
+    "BTC/USDT:USDT",
+    "ETH/USDT:USDT"
 ]
 
 def fetch_trading_volume_and_liquidity(binance, pair):
@@ -76,10 +93,9 @@ def fetch_trading_volume_and_liquidity(binance, pair):
     except Exception as err:
         print(f"Unexpected error fetching trading volume and liquidity for {pair}: {err}")
 
-def fetch_funding_rates(binance, pair):
-    """Fetch funding rates for perpetual contracts for a given pair."""
+def fetch_funding_rates(exchange, pair):
     try:
-        funding_rate = binance.fetch_funding_rate(pair)
+        funding_rate = exchange.fetch_funding_rate(pair)
         csv_filename = f"data/raw/{pair.replace('/', '_')}_funding_rates.csv"
         os.makedirs(os.path.dirname(csv_filename), exist_ok=True)
         df = pd.DataFrame([funding_rate])
@@ -130,8 +146,9 @@ since_timestamp = int((datetime.now() - timedelta(days=730)).timestamp() * 1000)
 for pair in binance_coin_pairs:
     fetch_historical_data(binance, pair, since_timestamp)
     fetch_trading_volume_and_liquidity(binance, pair, since_timestamp)
-    fetch_funding_rates(binance, pair)
 
+for pair in futures_pairs:
+    fetch_funding_rates(binance_futures, pair)
 print("Historical data fetching completed.")
 
 if __name__ == "__main__":
