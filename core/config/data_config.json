@@ -1,0 +1,48 @@
+{
+    "stablecoins": [
+      "USDT",
+      "USDC",
+      "DAI",
+      "BUSD",
+      "TUSD"
+    ],
+    "binance_coin_pairs": {
+      "crypto_vs_stablecoin": [
+        "BTC/USDT",
+        "ETH/USDT",
+        "BNB/USDT",
+        "BTC/USDC",
+        "ETH/USDC",
+        "DAI/USDT",
+        "DAI/USDC",
+        "BUSD/USDT"
+      ],
+      "stablecoin_vs_stablecoin": [
+        "USDC/USDT",
+        "DAI/USDT",
+        "USDT/TUSD",
+        "DAI/USDC"
+      ]
+    },
+    "data_sources": {
+      "ccxt": [
+        "Binance"
+      ],
+      "coingecko": [
+        "tether",
+        "usd-coin",
+        "dai"
+      ],
+      "messari": [
+        "usdc"
+      ],
+      "web3": [
+        "Ethereum block data",
+        "stablecoin smart contract events (future)"
+      ],
+      "yfinance": [
+        "^TNX"
+      ]
+    }
+  }
+  
