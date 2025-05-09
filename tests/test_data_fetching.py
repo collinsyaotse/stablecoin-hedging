@@ -81,15 +81,45 @@ class TestDataFetching(unittest.TestCase):
         except ValueError as err:
             self.fail(f"JSON decoding error from Messari: {err}")
 
+    def test_fetch_messari(self):
+        """Test the Messari API time-series endpoint for expected historical data format."""
+        url = 'https://data.messari.io/api/v1/assets/usdc/metrics/price/time-series'
+        params = {
+        'start': '2023-05-01',
+        'end': '2025-05-01',
+        'interval': '1d'
+        }
+
+        try:
+            response = requests.get(url, params=params, timeout=10)
+            self.assertEqual(response.status_code, 200, "Unexpected status code")
+
+            data = response.json()
+            self.assertIsNotNone(data)
+            self.assertIn('data', data)
+            self.assertIn('values', data['data'])
+            self.assertTrue(len(data['data']['values']) > 0, "No time-series data returned")
+
+            # Optionally print a preview of the data
+            print("First row of Messari time-series data:", data['data']['values'][0])
+
+        except requests.RequestException as err:
+            self.fail(f"HTTP request error from Messari: {err}")
+        except ValueError as err:
+            self.fail(f"JSON decoding error from Messari: {err}")
+
+
+
     def test_fetch_yfinance(self):
         """Test the yFinance API fetch function for expected data format."""
         try:
-            yields = yf.download('^TNX', period='1y')
-            self.assertIsNotNone(yields)
-            self.assertGreater(len(yields), 0)
-            print("yFinance Data (Treasury Yields):", yields)
+            yields = yf.download('^AAPL', period='0.1y')
+            self.assertIsNotNone(data)
+            self.assertGreater(len(data), 0)
+            print("yFinance Data (AAPL):", yields)
         except Exception as err:
             self.fail(f"Fetching data from yFinance failed: {err}")
+
 
 
 if __name__ == '__main__':
