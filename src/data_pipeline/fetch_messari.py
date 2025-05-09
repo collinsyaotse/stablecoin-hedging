@@ -1,8 +1,9 @@
 import os
-import requests
-from dotenv import load_dotenv
-import pandas as pd
 from datetime import datetime, timedelta, timezone
+
+import requests
+import pandas as pd
+from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -10,7 +11,6 @@ def fetch_messari():
     """Fetch 2 years of historical USDC price metrics from Messari and save to CSV."""
     url = 'https://data.messari.io/api/v1/assets/usdc/metrics/price/time-series'
 
-    # Calculate date range
     end_date = datetime.now(timezone.utc)
     start_date = end_date - timedelta(days=2 * 365)
 
@@ -34,24 +34,20 @@ def fetch_messari():
         if not values:
             raise KeyError("No 'values' found in the response JSON.")
 
-        # Create DataFrame with appropriate column names
         columns = ['timestamp', 'open', 'high', 'low', 'close', 'volume']
         df = pd.DataFrame(values, columns=columns)
-
-        # Convert timestamp to readable datetime
         df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
 
-        # Save to CSV
-        os.makedirs('data/raw', exist_ok=True)
-        df.to_csv('data/raw/messari_usdc_price_timeseries.csv', index=False)
-        print("✅ Saved historical USDC data to data/raw/messari_usdc_price_timeseries.csv")
+        os.makedirs('data/raw/messari', exist_ok=True)
+        df.to_csv('data/raw/messari/messari_usdc_price_timeseries.csv', index=False)
+        print("✅ Saved historical USDC data to data/raw/messari/messari_usdc_price_timeseries.csv")
 
     except requests.RequestException as err:
-        raise RuntimeError(f"HTTP request error from Messari: {err}")
+        raise RuntimeError(f"HTTP request error from Messari: {err}") from err
     except ValueError as err:
-        raise ValueError(f"JSON decoding error: {err}")
+        raise ValueError(f"JSON decoding error: {err}") from err
     except KeyError as err:
-        raise KeyError(f"Missing expected data structure: {err}")
+        raise KeyError(f"Missing expected data structure: {err}") from err
 
 if __name__ == "__main__":
     fetch_messari()
