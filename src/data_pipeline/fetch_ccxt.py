@@ -90,45 +90,46 @@ def fetch_funding_rates(binance, pair):
     except Exception as err:
         print(f"Unexpected error fetching funding rates for {pair}: {err}")
 
-    # Modify fetch_trading_volume_and_liquidity to fetch data for a 2-year span
-    def fetch_trading_volume_and_liquidity(binance, pair, since):
-        """Fetch trading volume and liquidity metrics for a given pair over a 2-year span."""
-        try:
-            ohlcv = binance.fetch_ohlcv(pair, timeframe='1d', since=since)
-            if ohlcv:
-                df = pd.DataFrame(ohlcv, columns=['timestamp', 'open', 'high', 
-                                  'low', 'close', 'volume'])
-                df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
-                df['pair'] = pair
-                df['bid'] = None
-                df['ask'] = None
-                df['spread'] = None
+# Modify fetch_trading_volume_and_liquidity to fetch data for a 2-year span
+def fetch_trading_volume_and_liquidity(binance, pair, since):
+    """Fetch trading volume and liquidity metrics for a given pair over a 2-year span."""
+    try:
+        ohlcv = binance.fetch_ohlcv(pair, timeframe='1d', since=since)
+        if ohlcv:
+            df = pd.DataFrame(ohlcv, columns=['timestamp', 'open', 'high', 
+                                'low', 'close', 'volume'])
+            df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
+            df['pair'] = pair
+            df['bid'] = None
+            df['ask'] = None
+            df['spread'] = None
 
-                for index, row in df.iterrows():
-                    ticker = binance.fetch_ticker(pair)
-                    df.at[index, 'bid'] = ticker.get('bid', 0)
-                    df.at[index, 'ask'] = ticker.get('ask', 0)
-                    df.at[index, 'spread'] = df.at[index, 'ask'] - df.at[index, 'bid'] if df.at[index, 'ask'] and df.at[index, 'bid'] else None
+            for index, row in df.iterrows():
+                ticker = binance.fetch_ticker(pair)
+                df.at[index, 'bid'] = ticker.get('bid', 0)
+                df.at[index, 'ask'] = ticker.get('ask', 0)
+                df.at[index, 'spread'] = df.at[index, 'ask'] - df.at[index, 'bid'] if df.at[index, 'ask'] and df.at[index, 'bid'] else None
 
-                csv_filename = f"data/raw/{pair.replace('/', '_')}_trading_volume_liquidity_2_years.csv"
-                os.makedirs(os.path.dirname(csv_filename), exist_ok=True)
-                df.to_csv(csv_filename, index=False)
-                print(f"Trading volume and liquidity data for {pair} over 2 years saved to {csv_filename}")
-            else:
-                print(f"No trading volume and liquidity data fetched for {pair}")
-        except ccxt.BaseError as err:
-            print(f"CCXT BaseError occurred while fetching trading volume and liquidity for {pair}: {err}")
-        except Exception as err:
-            print(f"Unexpected error fetching trading volume and liquidity for {pair}: {err}")
-        except ccxt.BaseError as err:
-            print(f"CCXT BaseError occurred while fetching trading volume and liquidity for {pair}: {err}")
-        except Exception as err:
-            print(f"Unexpected error fetching trading volume and liquidity for {pair}: {err}")
+            csv_filename = f"data/raw/{pair.replace('/', '_')}_trading_volume_liquidity_2_years.csv"
+            os.makedirs(os.path.dirname(csv_filename), exist_ok=True)
+            df.to_csv(csv_filename, index=False)
+            print(f"Trading volume and liquidity data for {pair} over 2 years saved to {csv_filename}")
+        else:
+            print(f"No trading volume and liquidity data fetched for {pair}")
+    except ccxt.BaseError as err:
+        print(f"CCXT BaseError occurred while fetching trading volume and liquidity for {pair}: {err}")
+    except Exception as err:
+        print(f"Unexpected error fetching trading volume and liquidity for {pair}: {err}")
+    except ccxt.BaseError as err:
+        print(f"CCXT BaseError occurred while fetching trading volume and liquidity for {pair}: {err}")
+    except Exception as err:
+        print(f"Unexpected error fetching trading volume and liquidity for {pair}: {err}")
+
 since_timestamp = int((datetime.now() - timedelta(days=730)).timestamp() * 1000)
 
 for pair in binance_coin_pairs:
     fetch_historical_data(binance, pair, since_timestamp)
-    fetch_trading_volume_and_liquidity(binance, pair)
+    fetch_trading_volume_and_liquidity(binance, pair, since_timestamp)
     fetch_funding_rates(binance, pair)
 
 print("Historical data fetching completed.")
