@@ -99,6 +99,14 @@ def fetch_funding_rates(exchange, pair):
         csv_filename = f"data/raw/{pair.replace('/', '_')}_funding_rates.csv"
         os.makedirs(os.path.dirname(csv_filename), exist_ok=True)
         df = pd.DataFrame([funding_rate])
+        funding_rate['timestamp'] = pd.to_datetime(funding_rate['timestamp'], unit='ms')
+        funding_rate['pair'] = pair
+        funding_rate['rate'] = funding_rate.get('fundingRate', None)
+        df = pd.DataFrame([{
+            'timestamp': funding_rate['timestamp'],
+            'pair': funding_rate['pair'],
+            'rate': funding_rate['rate']
+        }])
         df.to_csv(csv_filename, index=False)
         print(f"Funding rate for {pair} saved to {csv_filename}")
     except ccxt.BaseError as err:
