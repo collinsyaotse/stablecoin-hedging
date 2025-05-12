@@ -1,9 +1,18 @@
+'''
+Funding Rates Preprocessing Script
+This script merges and cleans funding rate data
+from multiple CSV files.
+It handles missing values, normalizes the rate column, 
+and saves the cleaned data to a new CSV file.
+'''
+
+import os
 from sklearn.preprocessing import MinMaxScaler
 import pandas as pd
 import numpy as np
-import os
 
 def clean_liquidity_data(input_dir, output_file):
+    '''Merge and clean liquidity data from multiple CSV files.'''
     df_dict_liquidity = {}
     for file_name in os.listdir(input_dir):
         if file_name.endswith('.csv'):
@@ -21,12 +30,10 @@ def clean_liquidity_data(input_dir, output_file):
             df = df[~df.index.duplicated(keep='first')]
 
             # Logical validation
-            df = df[
-                (df['low'] <= df[['open', 'close']].min(axis=1)) &
+            df = df[(df['low'] <= df[['open', 'close']].min(axis=1)) &
                 (df['high'] >= df[['open', 'close']].max(axis=1)) &
                 (df['volume'] >= 0) &
-                (df['bid'] <= df['ask'])
-            ]
+                (df['bid'] <= df['ask'])]
 
             # Derived features
             df['daily_return'] = (df['close'] - df['open']) / df['open']
@@ -42,6 +49,7 @@ def clean_liquidity_data(input_dir, output_file):
             df[numeric_cols] = scaler.fit_transform(df[numeric_cols])
 
             df_dict_liquidity[file_name] = df
+
     # Merge all dataframes vertically
     merged_liquidity_df = pd.concat(df_dict_liquidity.values(), axis=0)
 
@@ -53,8 +61,8 @@ def clean_liquidity_data(input_dir, output_file):
     print(f"Merged liquidity data saved to {output_file}")
 
 # Define input directory and output file
-input_directory = 'data/raw/binance/trading-volume'
-output_csv = 'data/processed/binance/merged_trading_volume_liquidity_data.csv'
+INPUT_DIRECTORY= 'data/raw/binance/trading-volume'
+OUTPUT_CSV= 'data/processed/binance/merged_trading_volume_liquidity_data.csv'
 
 # Run the function
-clean_liquidity_data(input_directory, output_csv)
+clean_liquidity_data(INPUT_DIRECTORY, OUTPUT_CSV)

@@ -1,9 +1,18 @@
+'''
+Funding Rates Preprocessing Script
+This script merges and cleans funding rate data
+from multiple CSV files.
+It handles missing values, normalizes the rate column, 
+and saves the cleaned data to a new CSV file.
+'''
+
+import os
 from sklearn.preprocessing import MinMaxScaler
 import numpy as np
 import pandas as pd
-import os
 
 def clean_preprocess(input_dir, output_file):
+    '''Merge and clean historical data from multiple CSV files.'''
     df_dict_historical = {}
 
     for file_name in os.listdir(input_dir):
@@ -20,11 +29,9 @@ def clean_preprocess(input_dir, output_file):
             df = df[~df.index.duplicated(keep='first')]
 
             # Filter invalid rows
-            df = df[
-                (df['low'] <= df[['open', 'close']].min(axis=1)) & 
+            df = df[(df['low'] <= df[['open', 'close']].min(axis=1)) & 
                 (df['high'] >= df[['open', 'close']].max(axis=1)) & 
-                (df['volume'] >= 0)
-            ]
+                (df['volume'] >= 0)]
 
             # Add calculated columns
             df['daily_return'] = (df['close'] - df['open']) / df['open']
@@ -56,8 +63,8 @@ def clean_preprocess(input_dir, output_file):
     print(f"Merged historical data saved to {output_file}")
 
 # Define input directory and output file
-input_directory = 'data/raw/binance/historical-data'
-output_csv = 'data/processed/binance/merged_historical_data.csv'
+INPUT_DIRECTORY = 'data/raw/binance/historical-data'
+OUTPUT_CSV = 'data/processed/binance/merged_historical_data.csv'
 
 # Run the function
-clean_preprocess(input_directory, output_csv)
+clean_preprocess(INPUT_DIRECTORY, OUTPUT_CSV)

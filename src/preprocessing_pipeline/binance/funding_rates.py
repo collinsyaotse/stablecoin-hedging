@@ -1,8 +1,17 @@
+'''
+Funding Rates Preprocessing Script
+This script merges and cleans funding rate data
+from multiple CSV files.
+It handles missing values, normalizes the rate column, 
+and saves the cleaned data to a new CSV file.
+'''
+
 import os
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 
 def merge_and_clean_funding_rates(input_dir, output_file):
+    '''Merge and clean funding rate data from multiple CSV files.'''
     # Dictionary to hold dataframes
     df_dict_funding = {}
 
@@ -48,8 +57,8 @@ def merge_and_clean_funding_rates(input_dir, output_file):
     merged_funding_df.to_csv(output_file, index=False)
 
 # Define input directory and output file
-input_directory = 'data/raw/binance/funding-rates'
-output_csv = 'data/processed/binance/merged_funding_data.csv'
+INPUT_DIRECTORY = 'data/raw/binance/funding-rates'
+OUTPUT_CSV = 'data/processed/binance/merged_funding_data.csv'
 
 # Run the function
-merge_and_clean_funding_rates(input_directory, output_csv)
+merge_and_clean_funding_rates(INPUT_DIRECTORY, OUTPUT_CSV)
