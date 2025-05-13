@@ -126,7 +126,6 @@ def fetch_funding_rates(exchange, pair):
     except Exception as err:
         print(f"Unexpected error fetching funding rates for {pair}: {err}")
 
-# Modify fetch_trading_volume_and_liquidity to fetch data for a 2-year span
 def fetch_trading_volume_and_liquidity(binance, pair, since):
     """Fetch trading volume and liquidity metrics for a given pair over a 2-year span."""
     try:

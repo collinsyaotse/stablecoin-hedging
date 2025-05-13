@@ -21,7 +21,6 @@ def clean_liquidity_data(input_dir, output_file):
             # Parse timestamp
             df['timestamp'] = pd.to_datetime(df['timestamp'])
             df = df.sort_values('timestamp')
-            df.set_index('timestamp', inplace=True)
 
             # Forward fill missing values
             df = df.ffill()
@@ -47,7 +46,7 @@ def clean_liquidity_data(input_dir, output_file):
             scaler = MinMaxScaler()
             numeric_cols = ['open', 'high', 'low', 'close', 'volume', 'bid', 'ask', 'spread']
             df[numeric_cols] = scaler.fit_transform(df[numeric_cols])
-
+            
             df_dict_liquidity[file_name] = df
 
     # Merge all dataframes vertically

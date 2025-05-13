@@ -30,12 +30,11 @@ def merge_and_clean_funding_rates(input_dir, output_file):
 
             # Optionally handle zeros (e.g., replace with NaN then forward-fill)
             df['rate'] = df['rate'].replace(0, pd.NA)
-            df['rate'] = df['rate'].ffill().infer_objects(copy=False)
+            df['rate'] = df['rate'].ffill()
 
             # Extract pair info
-            df['pair_clean'] = df['pair'].str.replace('/', '_').str.replace(':', '_').str.lower()
-            df[['base', 'quote']] = df['pair'].str.split('/', expand=True)
-            df['quote'] = df['quote'].str.replace(':USDC', '', regex=False)  # optional cleanup
+            df['pair_clean'] = df['pair'].str.replace('/', '_').str.replace(':', '_')
+            df[['pair', 'quote']] = df['pair'].str.split(':', expand=True)  
 
             # Reset index for safety
             df.reset_index(drop=True, inplace=True)

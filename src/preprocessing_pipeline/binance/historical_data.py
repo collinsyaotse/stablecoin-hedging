@@ -22,7 +22,6 @@ def clean_preprocess(input_dir, output_file):
             # Convert timestamp to datetime and sort
             df['timestamp'] = pd.to_datetime(df['timestamp'])
             df = df.sort_values('timestamp')
-            df.set_index('timestamp', inplace=True)
 
             # Fill missing values and remove duplicates
             df = df.ffill()
