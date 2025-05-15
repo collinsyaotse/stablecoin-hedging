@@ -1,5 +1,6 @@
 import os
 from datetime import datetime, timedelta
+import time
 
 from dotenv import load_dotenv
 import ccxt
@@ -67,6 +68,17 @@ futures_pairs = [
     "ETH/USDT:USDT"
 ]
 
+funding_rate_pairs = [
+    "BNB/USDT:USDT",
+    "BTC/USDT:USDT",
+    "ETH/USDT:USDT",
+    "SOL/USDT:USDT",
+    "LTC/USDT:USDT",
+    "BNB/USDC:USDC",
+    "ETH/USDC:USDC",
+    "BTC/USDC:USDC"
+]
+
 def fetch_trading_volume_and_liquidity(binance, pair):
     """Fetch trading volume and liquidity metrics for a given pair."""
     try:
@@ -99,6 +111,14 @@ def fetch_funding_rates(exchange, pair):
         csv_filename = f"data/raw/{pair.replace('/', '_')}_funding_rates.csv"
         os.makedirs(os.path.dirname(csv_filename), exist_ok=True)
         df = pd.DataFrame([funding_rate])
+        funding_rate['timestamp'] = pd.to_datetime(funding_rate['timestamp'], unit='ms')
+        funding_rate['pair'] = pair
+        funding_rate['rate'] = funding_rate.get('fundingRate', None)
+        df = pd.DataFrame([{
+            'timestamp': funding_rate['timestamp'],
+            'pair': funding_rate['pair'],
+            'rate': funding_rate['rate']
+        }])
         df.to_csv(csv_filename, index=False)
         print(f"Funding rate for {pair} saved to {csv_filename}")
     except ccxt.BaseError as err:
@@ -106,7 +126,6 @@ def fetch_funding_rates(exchange, pair):
     except Exception as err:
         print(f"Unexpected error fetching funding rates for {pair}: {err}")
 
-# Modify fetch_trading_volume_and_liquidity to fetch data for a 2-year span
 def fetch_trading_volume_and_liquidity(binance, pair, since):
     """Fetch trading volume and liquidity metrics for a given pair over a 2-year span."""
     try:
@@ -142,14 +161,79 @@ def fetch_trading_volume_and_liquidity(binance, pair, since):
         print(f"Unexpected error fetching trading volume and liquidity for {pair}: {err}")
 
 since_timestamp = int((datetime.now() - timedelta(days=730)).timestamp() * 1000)
+exchange = ccxt.binance({'enableRateLimit': True}, )
+
+def fetch_historical_funding_rates_with_retry(pair, since_days=730, max_retries=5, save_dir='data/raw'):
+    # Create the exchange with increased timeout and rate limit enabled
+    binance_futures = ccxt.binanceusdm({
+        'enableRateLimit': True,
+        'timeout': 60000  # 60 seconds
+    })
+
+    try:
+        # Load market metadata (fetches exchange info)
+        binance_futures.load_markets()
+    except Exception as e:
+        print(f"Failed to load Binance markets: {e}")
+        return
+
+    since = binance_futures.parse8601((datetime.utcnow() - timedelta(days=since_days)).isoformat())
+    all_rates = []
+
+    print(f"Fetching funding rate history for {pair}...")
+
+    while True:
+        for attempt in range(max_retries):
+            try:
+                rates = binance_futures.fetch_funding_rate_history(pair, since=since, limit=1000)
+                break  # exit retry loop on success
+            except ccxt.RequestTimeout:
+                print(f"RequestTimeout for {pair} — retrying ({attempt+1}/{max_retries}) in 5s...")
+                time.sleep(5)
+            except Exception as e:
+                print(f"Unexpected error for {pair}: {e}")
+                return  # give up on other errors
+        else:
+            print(f"Failed to fetch funding rates for {pair} after {max_retries} retries.")
+            return
+
+        if not rates:
+            break
+
+        all_rates.extend(rates)
+        since = rates[-1]['timestamp'] + 1  # advance since timestamp
+
+        # Optional: throttle requests (good practice)
+        time.sleep(binance_futures.rateLimit / 1000)
+
+    if not all_rates:
+        print(f"No funding rate data retrieved for {pair}.")
+        return
+
+    # Format results into DataFrame
+    df = pd.DataFrame(all_rates)
+    df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
+    df['pair'] = pair
+    df['rate'] = df.get('fundingRate', None)
+    df = df[['timestamp', 'pair', 'rate']]
+
+    # Save to CSV
+    os.makedirs(save_dir, exist_ok=True)
+    filename = os.path.join(save_dir, f"{pair.replace('/', '_').replace(':', '_')}_funding_rates_2y.csv")
+    df.to_csv(filename, index=False)
+    print(f"✅ Saved 2 years of funding rates for {pair} to {filename}")
+
+    return df
 
 for pair in binance_coin_pairs:
     fetch_historical_data(binance, pair, since_timestamp)
     fetch_trading_volume_and_liquidity(binance, pair, since_timestamp)
 
-for pair in futures_pairs:
-    fetch_funding_rates(binance_futures, pair)
-print("Historical data fetching completed.")
+for pairs in funding_rate_pairs:
+    fetch_historical_funding_rates_with_retry(binance_futures, pairs)
+print("Funding rates fetching completed.")
 
 if __name__ == "__main__":
     pass
+
+

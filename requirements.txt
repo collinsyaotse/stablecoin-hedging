@@ -17,6 +17,7 @@ seaborn==0.13.2
 plotly==5.20.0
 dash==2.12.0  # for interactive web-based visualizations
 dash-bootstrap-components==2.0.1
+scikit-learn==1.6.1
 
 
 # Statistical and Financial Analysis
