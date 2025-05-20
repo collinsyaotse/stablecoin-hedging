@@ -1,37 +1,38 @@
-import requests
+import requests, csv
+import pandas as pd
+from datetime import datetime
 
-API_KEY = "9e4d427f-da3b-4206-8400-5ac443a48613"
+POOL_ID    = "D1qM4rMDmSzjarCTXrr1dynmDCP6DPQNkMe5m7UYnZh3"
+NETWORK    = "solana"
+TIMEFRAME  = "day"
+OUTPUT_CSV = "data/raw/imputed_JLP_SOL_all_history_interpolated.csv"
 
-headers = {
-    "Accepts": "application/json",
-    "X-CMC_PRO_API_KEY": API_KEY,
-}
+# 1) Fetch the full history
+URL = (
+    f"https://api.geckoterminal.com/api/v2/networks/{NETWORK}"
+    f"/pools/{POOL_ID}/ohlcv/{TIMEFRAME}"
+)
+resp  = requests.get(URL)
+resp.raise_for_status()
+ohlcv = resp.json()["data"]["attributes"]["ohlcv_list"]
 
-def get_coin_id(symbol):
-    url = f"https://pro-api.coinmarketcap.com/v1/cryptocurrency/map?symbol={symbol}"
-    response = requests.get(url, headers=headers)
-    data = response.json()
-    if data["status"]["error_code"] == 0 and data["data"]:
-        return data["data"][0]["id"]
-    else:
-        raise ValueError("Token not found.")
+# 2) Convert to DataFrame
+df = pd.DataFrame(ohlcv, columns=["timestamp", "open", "high", "low", "close", "volume"])
+df["date"] = pd.to_datetime(df["timestamp"], unit="s")
+df.set_index("date", inplace=True)
+df = df.drop(columns="timestamp")
+df = df.sort_index()
 
-def get_coin_quote(coin_id):
-    url = f"https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?id={coin_id}"
-    response = requests.get(url, headers=headers)
-    return response.json()
+# 3) Create complete date range from 2023-05-20 to most recent
+full_range = pd.date_range(start="2023-05-20", end=df.index.max(), freq="D")
+df = df.reindex(full_range)
 
-# ---- Run the code ----
-symbol = "JLP"  
-try:
-    coin_id = get_coin_id(symbol)
-    data = get_coin_quote(coin_id)
-    quote = data["data"][str(coin_id)]["quote"]["USD"]
+# 4) Interpolate missing values using time-based interpolation
+df = df.interpolate(method="time", limit_direction="both")
 
-    print(f"Price: ${quote['price']:.4f}")
-    print(f"24h Volume: ${quote['volume_24h']:.2f}")
-    print(f"Market Cap: ${quote['market_cap']:.2f}")
-    print(f"Percent Change 24h: {quote['percent_change_24h']:.2f}%")
-    print(f"Bid/Ask Spread: N/A (not directly available)")
-except Exception as e:
-    print("Error:", e)
+# 5) Write to CSV
+df.reset_index(inplace=True)
+df.rename(columns={"index": "date"}, inplace=True)
+df.to_csv(OUTPUT_CSV, index=False)
+
+print(f"✅ Saved interpolated CSV from 2023-05-20 to {df['date'].max().date()} ({len(df)} rows)")
