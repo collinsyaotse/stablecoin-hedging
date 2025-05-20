@@ -7,7 +7,7 @@ from pycoingecko import CoinGeckoAPI
 def fetch_coingecko_data():
     """Fetch and save data metrics for Tether, USDC, and DAI."""
     cg = CoinGeckoAPI()
-    coins = ["tether", "usd-coin", "dai"]
+    coins = ["fartcoin", "tether", "usd-coin", "dai"]
     base_currency = 'usd'
     days = 365
     output_dir = os.path.join(os.getcwd(), 'data', 'raw', 'coingecko')

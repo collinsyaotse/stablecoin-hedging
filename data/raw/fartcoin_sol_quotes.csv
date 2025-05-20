@@ -1,0 +1,2 @@
+timestamp,input_amount_fartcoin,output_amount_sol,price_impact_pct,route_type
+2025-05-16 09:38:42,1.0,0.007327989,0.0,"{'ammKey': 'FeLULW5RCKDT2NuThu4vrAQ8BjH5YbU2Y7GbiZXYohm8', 'label': 'SolFi', 'inputMint': '9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump', 'outputMint': 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', 'inAmount': '1000000', 'outAmount': '1253210', 'feeAmount': '0', 'feeMint': '9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump'}"
