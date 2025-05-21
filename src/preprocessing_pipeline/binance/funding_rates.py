@@ -33,8 +33,14 @@ def merge_and_clean_funding_rates(input_dir, output_file):
             df['rate'] = df['rate'].ffill()
 
             # Extract pair info
-            df['pair_clean'] = df['pair'].str.replace('/', '_').str.replace(':', '_')
-            df[['pair', 'quote']] = df['pair'].str.split(':', expand=True)  
+            # Only split rows where ':' exists in the string
+            df[['pair_base', 'quote']] = df['pair'].apply(
+                  lambda x: pd.Series(x.split(':')) if ':' in x else pd.Series([x, None])
+                  )
+
+            # fill missing quotes with a default or extract from base (e.g., second half of 'SOL/USDC')
+            df['quote'] = df['quote'].fillna(df['pair_base'].apply(lambda x: x.split('/')[-1]))
+
 
             # Reset index for safety
             df.reset_index(drop=True, inplace=True)

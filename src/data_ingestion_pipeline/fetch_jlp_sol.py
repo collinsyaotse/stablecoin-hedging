@@ -35,4 +35,8 @@ df.reset_index(inplace=True)
 df.rename(columns={"index": "date"}, inplace=True)
 df.to_csv(OUTPUT_CSV, index=False)
 
+<<<<<<< HEAD
 print(f"✅ Saved interpolated CSV from 2023-05-20 to {df['date'].max().date()} ({len(df)} rows)")
+=======
+print(f"✅ Saved interpolated CSV from 2023-05-20 to {df['date'].max().date()} ({len(df)} rows)")
+>>>>>>> main
