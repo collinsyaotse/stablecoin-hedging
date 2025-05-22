@@ -101,7 +101,8 @@ def save_to_csv(data, pool_info, filename, cutoff_dt=None, now_dt=None):
     with open(filename, "w", newline="") as f:
         writer = csv.writer(f)
         
-        # Write header with additional pool info
+
+        # Write header
         writer.writerow([
             "date", "open", "high", "low", "close", "volume",
             "liquidity_usd", "liquidity_base",
@@ -132,7 +133,7 @@ def save_to_csv(data, pool_info, filename, cutoff_dt=None, now_dt=None):
 def main():
     # Create data directory if it doesn't exist
     os.makedirs("data/raw/gecko-terminal", exist_ok=True)
-    
+
     # Define pools to fetch data for
     pools = [
         {
