@@ -52,7 +52,7 @@ binance_futures.fetch_funding_rate('BNB/USDT:USDT')
 
 # Define pairs and fetch historical data for the last 2 years
 binance_coin_pairs = [
-    "SOL/USDC",
+    "Fartcoin/SOL",
   #  "ETH/USDT",
    # "BNB/USDT",
    # "BTC/USDC",
@@ -69,15 +69,8 @@ binance_coin_pairs = [
 #]
 
 funding_rate_pairs = [
+ 
     "SOL/USDC:USDC",
-  #  "BNB/USDT:USDT",
-  #  "BTC/USDT:USDT",   
-  #  "ETH/USDT:USDT",
-  #  "SOL/USDT:USDT",
-  #  "LTC/USDT:USDT",
-  #  "BNB/USDC:USDC",
-  #  "ETH/USDC:USDC",
-   # "BTC/USDC:USDC"
 ]
 
 # def fetch_trading_volume_and_liquidity(binance, pair):
@@ -226,9 +219,7 @@ def fetch_historical_funding_rates_with_retry(pair, since_days=730, max_retries=
 
     return df
 
-# for pair in binance_coin_pairs:
-#     fetch_historical_data(binance, pair, since_timestamp)
-#     fetch_trading_volume_and_liquidity(binance, pair, since_timestamp)
+
 
 for pair in funding_rate_pairs:
     fetch_historical_funding_rates_with_retry(pair=pair)

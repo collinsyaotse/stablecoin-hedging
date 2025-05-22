@@ -1,75 +1,3 @@
-
-
-# Fetching the CoinMarketCap ID for JLP using the CoinMarketCap API.
-# import requests
-
-# def get_coinmarketcap_id(symbol, api_key):
-#     url = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/map"
-#     headers = {
-#         'Accepts': 'application/json',
-#         'X-CMC_PRO_API_KEY': api_key,
-#     }
-#     params = {'symbol': symbol.upper()}
-
-#     response = requests.get(url, headers=headers, params=params)
-#     data = response.json()
-#     if 'data' in data and len(data['data']) > 0:
-#         for item in data['data']:
-#             print(f"Name: {item['name']}, ID: {item['id']}, Slug: {item['slug']}")
-#         return data['data'][0]['id']
-#     else:
-#         print("Token not found.")
-#         return None
-
-# api_key = "bbba36ba-8c97-40c9-8272-82b9cd157b3f"
-# get_coinmarketcap_id("JLP", api_key)
-
-
-# import requests
-# import pandas as pd
-
-# api_key = "bbba36ba-8c97-40c9-8272-82b9cd157b3f"
-
-# def get_historical_cmc_data(api_key, coin_id=28853, convert="SOL", start_date="2025-05-01", end_date="2025-05-21"):
-#     url = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/ohlcv/historical"
-#     headers = {
-#         'Accepts': 'application/json',
-#         'X-CMC_PRO_API_KEY': api_key,
-#     }
-#     params = {
-#         'id': coin_id,
-#         'convert': convert.upper(),
-#         'time_start': start_date,
-#         'time_end': end_date,
-#     }
-
-#     response = requests.get(url, headers=headers, params=params)
-#     if response.status_code == 200:
-#         data = response.json()['data']['quotes']
-#         df = pd.DataFrame([
-#             {
-#                 "timestamp": item['timestamp'],
-#                 "open": item['quote'][convert]['open'],
-#                 "high": item['quote'][convert]['high'],
-#                 "low": item['quote'][convert]['low'],
-#                 "close": item['quote'][convert]['close'],
-#                 "volume": item['quote'][convert]['volume']
-#             }
-#             for item in data
-#         ])
-#         filename = f"jlp_{convert.lower()}_cmc_data.csv"
-#         df.to_csv(filename, index=False)
-#         print(f"✅ Historical JLP/{convert} data saved to {filename}")
-#     else:
-#         print(f"❌ Error fetching data: {response.status_code} - {response.text}")
-
-
-# api_key = "bbba36ba-8c97-40c9-8272-82b9cd157b3f"
-# get_historical_cmc_data(api_key, coin_id=28853, convert="SOL", start_date="2024-01-01", end_date="2024-05-21")
-# get_historical_cmc_data(api_key, coin_id=28853, convert="USDC", start_date="2024-01-01", end_date="2024-05-21")
-# get_historical_cmc_data(api_key, coin_id=28853, convert="USDT", start_date="2024-01-01", end_date="2024-05-21")
-
-
 import requests
 import csv
 import os
@@ -168,13 +96,15 @@ def save_to_csv(data, pool_info, filename, cutoff_dt=None, now_dt=None):
     with open(filename, "w", newline="") as f:
         writer = csv.writer(f)
         
-        # Write header with additional pool info
+
+        # Write header
         writer.writerow([
-            "date", "volume", 
+            "date", "open", "high", "low", "close", "volume", 
             "liquidity_usd", "market_cap_usd", 
             "24h_volume", "6h_volume", "1h_volume", "5m_volume"
         ])
         
+
         # Get pool info values and use None if not available
         liquidity = pool_info.get("reserve_in_usd") if pool_info else None
         market_cap = pool_info.get("market_cap_usd") if pool_info else None
@@ -200,8 +130,8 @@ def save_to_csv(data, pool_info, filename, cutoff_dt=None, now_dt=None):
 
 def main():
     # Create data directory if it doesn't exist
-    os.makedirs("data/raw", exist_ok=True)
-    
+    os.makedirs("data/raw/gecko-terminal", exist_ok=True)
+
     # Define pools to fetch data for
     pools = [
         {
