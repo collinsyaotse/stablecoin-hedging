@@ -61,19 +61,23 @@ def fetch_pool_info(network, pool_id):
         
         pool_data = response.json()["data"]["attributes"]
         
+        base_price_usd = float(pool_data.get("base_token_price_usd") or 0)
+        reserve_in_usd = float(pool_data.get("reserve_in_usd") or 0)
+        market_cap_usd = float(pool_data.get("market_cap_usd") or 0)
+
+        # Derived in base token units
+        reserve_in_base = reserve_in_usd / base_price_usd if base_price_usd else None
+        market_cap_base = market_cap_usd / base_price_usd if base_price_usd else None
+
         info = {
             "name": pool_data.get("name", ""),
             "address": pool_id,
-            "base_token_price_usd": pool_data.get("base_token_price_usd"),
+            "base_token_price_usd": base_price_usd,
             "quote_token_price_usd": pool_data.get("quote_token_price_usd"),
-            "reserve_in_usd": pool_data.get("reserve_in_usd"),  # Total liquidity in USD
-            "volume_usd": {
-                "h24": pool_data.get("volume_usd", {}).get("h24"),
-                "h6": pool_data.get("volume_usd", {}).get("h6"),
-                "h1": pool_data.get("volume_usd", {}).get("h1"),
-                "m5": pool_data.get("volume_usd", {}).get("m5")
-            },
-            "market_cap_usd": pool_data.get("market_cap_usd")
+            "reserve_in_usd": reserve_in_usd,
+            "reserve_in_base": reserve_in_base,
+            "market_cap_usd": market_cap_usd,
+            "market_cap_base": market_cap_base,
         }
         
         return info
@@ -84,6 +88,7 @@ def fetch_pool_info(network, pool_id):
     except (KeyError, ValueError) as e:
         print(f"Error processing pool info: {str(e)}")
         return None
+
 
 def save_to_csv(data, pool_info, filename, cutoff_dt=None, now_dt=None):
     """Save OHLCV and pool info data to CSV file"""
@@ -99,27 +104,24 @@ def save_to_csv(data, pool_info, filename, cutoff_dt=None, now_dt=None):
 
         # Write header
         writer.writerow([
-            "date", "open", "high", "low", "close", "volume", 
-            "liquidity_usd", "market_cap_usd", 
-            "24h_volume", "6h_volume", "1h_volume", "5m_volume"
+            "date", "open", "high", "low", "close", "volume",
+            "liquidity_usd", "liquidity_base",
+            "market_cap_usd", "market_cap_base",
         ])
         
-
         # Get pool info values and use None if not available
-        liquidity = pool_info.get("reserve_in_usd") if pool_info else None
-        market_cap = pool_info.get("market_cap_usd") if pool_info else None
-        vol_24h = pool_info.get("volume_usd", {}).get("h24") if pool_info else None
-        vol_6h = pool_info.get("volume_usd", {}).get("h6") if pool_info else None
-        vol_1h = pool_info.get("volume_usd", {}).get("h1") if pool_info else None
-        vol_5m = pool_info.get("volume_usd", {}).get("m5") if pool_info else None
+        liquidity_usd = pool_info.get("reserve_in_usd") if pool_info else None
+        liquidity_base = pool_info.get("reserve_in_base") if pool_info else None
+        market_cap_usd = pool_info.get("market_cap_usd") if pool_info else None
+        market_cap_base = pool_info.get("market_cap_base") if pool_info else None
         
         # Write data rows
         for ts, o, h, l, c, v in data:
             dt = datetime.utcfromtimestamp(ts).strftime("%Y-%m-%d")
             writer.writerow([
-                dt, o, h, l, c, v, 
-                liquidity, market_cap, 
-                vol_24h, vol_6h, vol_1h, vol_5m
+                dt, o, h, l, c, v,
+                liquidity_usd, liquidity_base,
+                market_cap_usd, market_cap_base,
             ])
     
     date_range = ""
@@ -138,19 +140,19 @@ def main():
             "network": "solana",
             "pool_id": "6a3m2EgFFKfsFuQtP4LJJXPcAe3TQYXNyHUjjZpUxYgd",   
             "name": "JLP_SOL",
-            "output_csv": "data/raw/JLP_SOL_90days.csv"
+            "output_csv": "data/raw/gecko-terminal/JLP_SOL_90days.csv"
         },
         {
             "network": "solana",
             "pool_id": "6NUiVmsNjsi4AfsMsEiaezsaV9N4N1ZrD4jEnuWNRvyb",  
             "name": "JLP_USDC",
-            "output_csv": "data/raw/JLP_USDC_90days.csv"
+            "output_csv": "data/raw/gecko-terminal/JLP_USDC_90days.csv"
         },
         {
             "network": "solana",
             "pool_id": "C9U2Ksk6KKWvLEeo5yUQ7Xu46X7NzeBJtd9PBfuXaUSM",   
             "name": "Fartcoin_SOL",
-            "output_csv": "data/raw/Fartcoin_SOL_90days.csv"
+            "output_csv": "data/raw/gecko-terminal/Fartcoin_SOL_90days.csv"
         },
     ]
     
