@@ -85,7 +85,6 @@ def fetch_pool_info(network, pool_id):
         print(f"Error processing pool info: {str(e)}")
         return None
 
-
 def save_to_csv(data, pool_info, filename, cutoff_dt=None, now_dt=None):
     """Save OHLCV and pool info data to CSV file"""
     if data is None or not data:
@@ -97,6 +96,7 @@ def save_to_csv(data, pool_info, filename, cutoff_dt=None, now_dt=None):
     with open(filename, "w", newline="") as f:
         writer = csv.writer(f)
         
+
         # Write header
         writer.writerow([
             "date", "open", "high", "low", "close", "volume", 
@@ -104,7 +104,8 @@ def save_to_csv(data, pool_info, filename, cutoff_dt=None, now_dt=None):
             "24h_volume", "6h_volume", "1h_volume", "5m_volume"
         ])
         
-        # Get pool info values
+
+        # Get pool info values and use None if not available
         liquidity = pool_info.get("reserve_in_usd") if pool_info else None
         market_cap = pool_info.get("market_cap_usd") if pool_info else None
         vol_24h = pool_info.get("volume_usd", {}).get("h24") if pool_info else None
@@ -130,7 +131,7 @@ def save_to_csv(data, pool_info, filename, cutoff_dt=None, now_dt=None):
 def main():
     # Create data directory if it doesn't exist
     os.makedirs("data/raw/gecko-terminal", exist_ok=True)
-    
+
     # Define pools to fetch data for
     pools = [
         {
