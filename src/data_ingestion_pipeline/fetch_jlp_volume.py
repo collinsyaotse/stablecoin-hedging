@@ -65,8 +65,6 @@ def fetch_data(base):
     print("✅ Data saved to 'jlp_350_days_data.csv'")
 
 if __name__ == "__main__":
-    # Example usage
-    base_sol = "sol"  
+    # Example usage  
     base_usd = "usd"
-    fetch_data(base_sol)
     fetch_data(base_usd)
