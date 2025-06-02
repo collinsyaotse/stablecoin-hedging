@@ -23,7 +23,7 @@ class OrcaFeeTracker:
         self.whirlpool_program_id = ORCA_WHIRLPOOL_PROGRAM_ID
         self.sol_pools = {
             "JLP/SOL": "D1qM4rMDmSzjarCTXrr1dynmDCP6DPQNkMe5m7UYnZh3",
-            "JLP/USDC": "4hCreDsy9yJnWsXWbDJpSsymGZ2caE7SxTKhj48HiA68",
+            "JLP/USDC": "6NUiVmsNjsi4AfsMsEiaezsaV9N4N1ZrD4jEnuWNRvyb",
         }
 
     async def get_whirlpool_data(self, pool_name: str) -> Optional[Dict]:
